@@ -4,7 +4,8 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
-export AWS_PROFILE="${AWS_PROFILE:-shua-labs-sso}"
+# Locally use your SSO profile; in CI, OIDC credentials are already in the env.
+if [ -z "${CI:-}" ]; then export AWS_PROFILE="${AWS_PROFILE:-shua-labs-sso}"; fi
 
 BUCKET="$(terraform -chdir=envs/dev output -raw site_bucket)"
 DISTRIBUTION_ID="$(terraform -chdir=envs/dev output -raw distribution_id)"

@@ -1,0 +1,61 @@
+# Merges to main: wait for approval, then apply Terraform and publish the site.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# Never two deploys at once; a newer one waits instead of cancelling a running apply.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  TF_VERSION: 1.15.3
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r lambda/requirements-dev.txt
+      - run: python -m pytest -q
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    # The production environment requires your approval and only allows main.
+    # Its OIDC token says environment:production, the only thing the apply role trusts.
+    environment:
+      name: production
+      url: https://d77vjbj8h7gd5.cloudfront.net
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::755484097925:role/artifact-portal-gha-apply
+          aws-region: ${{ env.AWS_REGION }}
+      - name: terraform apply
+        working-directory: envs/dev
+        run: |
+          terraform init -input=false
+          terraform apply -input=false -auto-approve -lock-timeout=120s
+      - name: publish site
+        run: ./scripts/deploy-web.sh
