@@ -12,3 +12,8 @@ module "storage" {
   # Whoever runs Terraform (your SSO role) administers the key.
   admin_role_arns = [data.aws_iam_session_context.me.issuer_arn]
 }
+
+module "auth" {
+  source      = "../../modules/auth"
+  name_prefix = "artifact-portal-dev"
+}
