@@ -44,6 +44,8 @@ jobs:
 
   terraform-plan:
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
     defaults:
       run:
         working-directory: envs/dev

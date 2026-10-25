@@ -37,3 +37,11 @@ output "site_bucket" {
 output "distribution_id" {
   value = module.cdn.distribution_id
 }
+
+output "alerts_topic_arn" {
+  value = module.monitoring.sns_topic_arn
+}
+
+output "slo_dashboard_url" {
+  value = module.monitoring.dashboard_url
+}

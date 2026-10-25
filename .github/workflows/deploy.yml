@@ -33,6 +33,8 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    env:
+      TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
     # The production environment requires your approval and only allows main.
     # Its OIDC token says environment:production, the only thing the apply role trusts.
     environment:
