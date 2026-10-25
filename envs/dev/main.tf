@@ -55,3 +55,13 @@ module "cdn" {
   cognito_domain = module.auth.hosted_login_domain
   web_client_id  = module.auth.web_client_id
 }
+
+module "monitoring" {
+  source      = "../../modules/monitoring"
+  name_prefix = "artifact-portal-dev"
+
+  api_id          = module.api.api_id
+  function_names  = module.api.function_names
+  distribution_id = module.cdn.distribution_id
+  alert_email     = var.alert_email
+}
