@@ -5,3 +5,6 @@
 crash.log
 .DS_Store
 *.tfplan
+.build/
+__pycache__/
+.pytest_cache/

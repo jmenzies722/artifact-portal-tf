@@ -17,3 +17,15 @@ module "auth" {
   source      = "../../modules/auth"
   name_prefix = "artifact-portal-dev"
 }
+
+module "api" {
+  source      = "../../modules/api"
+  name_prefix = "artifact-portal-dev"
+
+  bucket_name = module.storage.bucket_name
+  bucket_arn  = module.storage.bucket_arn
+  kms_key_arn = module.storage.kms_key_arn
+
+  issuer_url = module.auth.issuer_url
+  audiences  = [module.auth.web_client_id, module.auth.ci_client_id]
+}

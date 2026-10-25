@@ -21,3 +21,7 @@ output "hosted_login_domain" {
 output "ci_secret_arn" {
   value = module.auth.ci_secret_arn
 }
+
+output "api_url" {
+  value = module.api.api_url
+}
