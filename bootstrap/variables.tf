@@ -7,5 +7,5 @@ variable "region" {
 variable "profile" {
   description = "AWS CLI profile to use"
   type        = string
-  default     = "shua-labs"
+  default     = "shua-labs-sso"
 }
