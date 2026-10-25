@@ -2,7 +2,9 @@
 # Lives in bootstrap because a pipeline can't create the role it logs in with.
 
 locals {
-  repo         = "jmenzies722/artifact-portal-tf"
+  # GitHub's immutable subject: owner and repo IDs, so a renamed or
+  # re-created repo with the same name can't inherit this trust.
+  repo         = "jmenzies722@101149635/artifact-portal-tf@1432690557"
   state_bucket = aws_s3_bucket.state.arn
 }
 
