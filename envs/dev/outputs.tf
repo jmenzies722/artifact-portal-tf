@@ -25,3 +25,15 @@ output "ci_secret_arn" {
 output "api_url" {
   value = module.api.api_url
 }
+
+output "site_url" {
+  value = module.cdn.site_url
+}
+
+output "site_bucket" {
+  value = module.cdn.site_bucket
+}
+
+output "distribution_id" {
+  value = module.cdn.distribution_id
+}
