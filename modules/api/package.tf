@@ -10,7 +10,7 @@ locals {
   function_names = { for k in keys(local.functions) : k => "${var.name_prefix}-${replace(k, "_", "-")}" }
 
   lambda_src   = "${path.module}/../../lambda"
-  shared_files = ["__init__.py", "permissions.py", "http.py"]
+  shared_files = ["__init__.py", "permissions.py", "http.py", "aws.py"]
 }
 
 # Each zip = handler.py + shared/. Built from file contents, so no build step.

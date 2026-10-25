@@ -3,14 +3,13 @@
 import functools
 import os
 
-import boto3
 
-from shared import http, permissions
+from shared import aws, http, permissions
 
 
 @functools.cache
 def _s3():
-    return boto3.client("s3")
+    return aws.s3_client()
 
 
 def handler(event, context):

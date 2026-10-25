@@ -3,9 +3,8 @@
 import functools
 import os
 
-import boto3
 
-from shared import http, permissions
+from shared import aws, http, permissions
 
 EXPIRES_IN = 300
 _MISSING = {"404", "NoSuchKey", "NotFound"}
@@ -13,7 +12,7 @@ _MISSING = {"404", "NoSuchKey", "NotFound"}
 
 @functools.cache
 def _s3():
-    return boto3.client("s3")
+    return aws.s3_client()
 
 
 def handler(event, context):

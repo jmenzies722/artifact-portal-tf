@@ -7,9 +7,8 @@ doesn't exist yet (S3 conditional write). A new build needs a new name.
 import functools
 import os
 
-import boto3
 
-from shared import http, permissions
+from shared import aws, http, permissions
 
 EXPIRES_IN = 300
 DEFAULT_CONTENT_TYPE = "application/octet-stream"
@@ -17,7 +16,7 @@ DEFAULT_CONTENT_TYPE = "application/octet-stream"
 
 @functools.cache
 def _s3():
-    return boto3.client("s3")
+    return aws.s3_client()
 
 
 def handler(event, context):

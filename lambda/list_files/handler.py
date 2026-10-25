@@ -3,16 +3,15 @@
 import functools
 import os
 
-import boto3
 
-from shared import http, permissions
+from shared import aws, http, permissions
 
 MAX_ITEMS = 1000
 
 
 @functools.cache
 def _s3():
-    return boto3.client("s3")
+    return aws.s3_client()
 
 
 def _prefixes_to_list(allowed, requested):
