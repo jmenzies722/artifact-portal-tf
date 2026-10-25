@@ -13,8 +13,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = "us-east-1"
-  profile = "shua-labs-sso"
+  region = "us-east-1"
 
   default_tags {
     tags = {

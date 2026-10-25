@@ -1,16 +1,20 @@
 data "aws_caller_identity" "current" {}
 
-# Resolves your SSO session to its IAM role ARN.
-data "aws_iam_session_context" "me" {
-  arn = data.aws_caller_identity.current.arn
+# Key admins are a fixed list, not "whoever runs Terraform": otherwise CI
+# runs would rewrite the key policy and drop your SSO role as admin.
+data "aws_iam_roles" "sso_admin" {
+  name_regex  = "AWSReservedSSO_AdministratorAccess_.*"
+  path_prefix = "/aws-reserved/sso.amazonaws.com/"
 }
 
 module "storage" {
   source      = "../../modules/storage"
   name_prefix = "artifact-portal-dev"
 
-  # Whoever runs Terraform (your SSO role) administers the key.
-  admin_role_arns = [data.aws_iam_session_context.me.issuer_arn]
+  admin_role_arns = concat(
+    tolist(data.aws_iam_roles.sso_admin.arns),
+    ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/artifact-portal-gha-apply"],
+  )
 }
 
 # No cycle: the web client depends on the distribution, but the distribution
