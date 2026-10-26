@@ -20,6 +20,7 @@ resource "aws_lambda_function" "fn" {
     variables = {
       BUCKET_NAME = var.bucket_name
       KMS_KEY_ARN = var.kms_key_arn
+      AUDIT_TABLE = aws_dynamodb_table.audit.name
     }
   }
 

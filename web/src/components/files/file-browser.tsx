@@ -13,6 +13,7 @@ import { ConfirmDialog } from "../confirm-dialog";
 import { usePortal } from "../providers";
 import { useToast } from "../toast";
 import { Button, buttonClass, EmptyState } from "../ui";
+import { ActivityPanel } from "./activity-panel";
 import { FileTable, TableSkeleton } from "./file-table";
 import { Sidebar } from "./sidebar";
 import { UploadPanel, type Upload } from "./upload-panel";
@@ -71,6 +72,8 @@ export function FileBrowser() {
   const [deleting, setDeleting] = useState(false);
   const [downloading, setDownloading] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [activityVersion, setActivityVersion] = useState(0);
+  const bumpActivity = () => setActivityVersion((v) => v + 1);
 
   const dragDepth = useRef(0);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -128,6 +131,7 @@ export function FileBrowser() {
       patchUpload(id, { status: "done", progress: 1 });
       toast({ tone: "success", title: "Upload complete", description: key });
       void load(true);
+      bumpActivity();
     } catch (err) {
       const message = toApiError(err).message;
       patchUpload(id, { status: "error", error: message });
@@ -153,6 +157,7 @@ export function FileBrowser() {
       const tab = window.open(url, "_blank");
       if (tab) tab.opener = null;
       else window.location.assign(url); // pop-up blocked: download in place
+      bumpActivity();
     } catch (err) {
       toast({ tone: "error", title: `Couldn't download ${row.name}`, description: toApiError(err).message });
     } finally {
@@ -170,6 +175,7 @@ export function FileBrowser() {
       setPendingDelete(null);
       toast({ tone: "success", title: `Deleted ${name}` });
       void load(true);
+      bumpActivity();
     } catch (err) {
       toast({ tone: "error", title: `Couldn't delete ${name}`, description: toApiError(err).message });
     } finally {
@@ -334,6 +340,8 @@ export function FileBrowser() {
             Showing the first 1,000 objects. Open a subfolder or use the filter to narrow things down.
           </p>
         )}
+
+        {ready && config && signedIn && hasRole && <ActivityPanel config={config} version={activityVersion} />}
 
         {dragging && (
           <div

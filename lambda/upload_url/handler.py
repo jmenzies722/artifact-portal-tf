@@ -8,7 +8,7 @@ import functools
 import os
 
 
-from shared import aws, http, permissions
+from shared import audit, aws, http, permissions
 
 EXPIRES_IN = 300
 DEFAULT_CONTENT_TYPE = "application/octet-stream"
@@ -55,6 +55,7 @@ def handler(event, context):
         HttpMethod="PUT",
     )
     http.log_request("write", key, principal, "allow", event=event)
+    audit.record(event, principal, "upload", key)
     return http.response(200, {
         "url": url,
         "key": key,
