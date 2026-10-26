@@ -44,3 +44,8 @@ variable "latency_p95_ms" {
   type        = number
   default     = 1000
 }
+
+variable "rotation_function_name" {
+  description = "The CI secret rotation Lambda; alarmed on its own (any error pages)"
+  type        = string
+}
