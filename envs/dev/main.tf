@@ -64,4 +64,6 @@ module "monitoring" {
   function_names  = module.api.function_names
   distribution_id = module.cdn.distribution_id
   alert_email     = var.alert_email
+  # Created by hand (see README); only the name is in git.
+  pagerduty_secret_name = "artifact-portal-dev/pagerduty-cloudwatch-url"
 }
