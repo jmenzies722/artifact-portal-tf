@@ -18,6 +18,18 @@ from helpers import FakeClientError  # noqa: E402
 def lambda_env(monkeypatch):
     monkeypatch.setenv("BUCKET_NAME", "test-bucket")
     monkeypatch.setenv("KMS_KEY_ARN", "arn:aws:kms:us-east-1:111122223333:key/test")
+    monkeypatch.setenv("AUDIT_TABLE", "test-audit")
+
+
+@pytest.fixture(autouse=True)
+def audit_db(monkeypatch):
+    """Every handler test gets a mock DynamoDB for audit writes, so none
+    reaches AWS; tests that care assert on its put_item calls."""
+    from shared import audit
+
+    client = mock.MagicMock()
+    monkeypatch.setattr(audit, "_dynamodb", lambda: client)
+    return client
 
 
 @pytest.fixture

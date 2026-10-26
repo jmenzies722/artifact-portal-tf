@@ -5,12 +5,13 @@ locals {
     upload_url   = { route = "POST /upload" }
     download_url = { route = "GET /download" }
     delete_file  = { route = "DELETE /files" }
+    activity     = { route = "GET /activity" }
   }
 
   function_names = { for k in keys(local.functions) : k => "${var.name_prefix}-${replace(k, "_", "-")}" }
 
   lambda_src   = "${path.module}/../../lambda"
-  shared_files = ["__init__.py", "permissions.py", "http.py", "aws.py"]
+  shared_files = ["__init__.py", "permissions.py", "http.py", "aws.py", "audit.py"]
 }
 
 # Each zip = handler.py + shared/. Built from file contents, so no build step.

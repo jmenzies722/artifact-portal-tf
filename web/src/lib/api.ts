@@ -14,6 +14,16 @@ export type UploadResponse = {
   required_headers: Record<string, string>;
 };
 
+export type ActivityItem = {
+  ts: string;
+  action: "upload" | "download" | "delete";
+  key: string;
+  actor: string;
+  actor_kind: "user" | "machine";
+  outcome: string;
+};
+export type ActivityResponse = { days: number; items: ActivityItem[]; truncated: boolean };
+
 export class ApiError extends Error {
   readonly status: number;
   constructor(status: number, message: string) {
@@ -80,6 +90,9 @@ export const api = {
 
   remove: (cfg: PortalConfig, key: string) =>
     call<{ deleted: string }>(cfg, `/files?${q("key", key)}`, { method: "DELETE" }),
+
+  activity: (cfg: PortalConfig, days: number) =>
+    call<ActivityResponse>(cfg, `/activity?${q("days", String(days))}`),
 };
 
 /**

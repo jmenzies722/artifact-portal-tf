@@ -4,7 +4,7 @@ import functools
 import os
 
 
-from shared import aws, http, permissions
+from shared import audit, aws, http, permissions
 
 EXPIRES_IN = 300
 _MISSING = {"404", "NoSuchKey", "NotFound"}
@@ -46,4 +46,5 @@ def handler(event, context):
         "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=EXPIRES_IN
     )
     http.log_request("read", key, principal, "allow", event=event)
+    audit.record(event, principal, "download", key)
     return http.response(200, {"url": url, "key": key, "expires_in": EXPIRES_IN})

@@ -4,7 +4,7 @@ import functools
 import os
 
 
-from shared import aws, http, permissions
+from shared import audit, aws, http, permissions
 
 
 @functools.cache
@@ -30,4 +30,5 @@ def handler(event, context):
 
     _s3().delete_object(Bucket=os.environ["BUCKET_NAME"], Key=key)
     http.log_request("delete", key, principal, "allow", event=event)
+    audit.record(event, principal, "delete", key)
     return http.response(200, {"deleted": key})
