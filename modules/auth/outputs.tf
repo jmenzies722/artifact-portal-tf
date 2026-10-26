@@ -25,3 +25,7 @@ output "hosted_login_domain" {
 output "ci_secret_arn" {
   value = aws_secretsmanager_secret.ci.arn
 }
+
+output "ci_secret_rotation_function" {
+  value = aws_lambda_function.rotate.function_name
+}
