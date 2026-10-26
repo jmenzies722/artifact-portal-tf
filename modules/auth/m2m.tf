@@ -14,8 +14,10 @@ resource "aws_cognito_user_pool_client" "ci" {
   depends_on = [aws_cognito_resource_server.artifacts]
 }
 
-# The CI client secret lives in Secrets Manager, never in code.
-# (Phase 4 adds zero-downtime rotation.)
+# The CI client secret lives in Secrets Manager, never in code. rotation.tf
+# rotates it every 30 days, adding and removing Cognito secrets outside
+# Terraform. The client itself needs no ignore_changes: rotation edits no
+# configurable attribute, and client_secret is read-only here.
 resource "aws_secretsmanager_secret" "ci" {
   name                    = "${var.name_prefix}/ci-client"
   description             = "Cognito client credentials for CI uploads"
@@ -28,4 +30,11 @@ resource "aws_secretsmanager_secret_version" "ci" {
     client_id     = aws_cognito_user_pool_client.ci.id
     client_secret = aws_cognito_user_pool_client.ci.client_secret
   })
+
+  # Seed value only. After the first rotation, AWSCURRENT is owned by the
+  # rotation Lambda; without this, Terraform would write back the client's
+  # first secret, which rotation eventually deletes, and break CI.
+  lifecycle {
+    ignore_changes = [secret_string]
+  }
 }
