@@ -46,20 +46,45 @@ resource "aws_cloudwatch_metric_alarm" "api_availability" {
 }
 
 # ---------- API latency: p95 end-to-end ----------
-# 3 of 3 so a single cold start can't page.
+# 3 of 3, and windows with fewer than 10 requests count as healthy: on an
+# idle lab one cold start IS the p95, and that's not an outage.
 resource "aws_cloudwatch_metric_alarm" "api_latency_p95" {
   alarm_name          = "${var.name_prefix}-api-latency-p95"
-  alarm_description   = "API p95 latency above ${var.latency_p95_ms} ms for 3 consecutive 5-minute windows. Runbook: compare Latency with IntegrationLatency on the dashboard (gateway vs Lambda), then check Lambda Duration and X-Ray traces."
-  namespace           = "AWS/ApiGateway"
-  metric_name         = "Latency"
-  dimensions          = local.api_dims
-  extended_statistic  = "p95"
-  period              = 300
+  alarm_description   = "API p95 latency above ${var.latency_p95_ms} ms for 3 consecutive 5-minute windows with at least 10 requests. Runbook: compare Latency with IntegrationLatency on the dashboard (gateway vs Lambda), then check Lambda Duration."
   comparison_operator = "GreaterThanThreshold"
   threshold           = var.latency_p95_ms
   evaluation_periods  = 3
   datapoints_to_alarm = 3
   treat_missing_data  = "notBreaching"
+
+  metric_query {
+    id          = "gated"
+    expression  = "IF(mcount >= 10, p95, 0)"
+    label       = "p95 latency (ms), gated"
+    return_data = true
+  }
+
+  metric_query {
+    id = "p95"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "Latency"
+      dimensions  = local.api_dims
+      stat        = "p95"
+      period      = 300
+    }
+  }
+
+  metric_query {
+    id = "mcount"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "Count"
+      dimensions  = local.api_dims
+      stat        = "Sum"
+      period      = 300
+    }
+  }
 
   alarm_actions = [aws_sns_topic.alerts.arn]
   ok_actions    = [aws_sns_topic.alerts.arn]

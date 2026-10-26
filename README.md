@@ -1,8 +1,25 @@
 # artifact-portal-tf
 
-A serverless artifact distribution portal on AWS, built with Terraform: CloudFront, API Gateway, Cognito, Lambda, S3 and DynamoDB, with OIDC CI/CD, SLOs wired to PagerDuty, and zero-downtime secret rotation.
+A serverless artifact distribution portal on AWS, built with Terraform: CloudFront, Cognito, API Gateway, Lambda, and S3 encrypted with a customer-managed KMS key. It deploys through keyless GitHub OIDC CI/CD with an approval gate and is monitored with CloudWatch SLO alarms.
 
-Personal lab project, written from scratch.
+Personal lab project, written from scratch. Live: https://d77vjbj8h7gd5.cloudfront.net
+
+## What's built
+
+- **Auth:** Cognito hosted UI (code + PKCE), role groups (developers, operations, testers, partner_a, partner_b), and a client-credentials CI client
+- **API:** HTTP API with a Cognito JWT authorizer and 4 least-privilege Lambdas. RBAC is enforced server-side, presigned URLs are SigV4, and artifacts are immutable (`If-None-Match`)
+- **Frontend:** Next.js static export on a private S3 bucket behind CloudFront (OAC). `/api/*` is same-origin, with security headers
+- **CI/CD:** GitHub Actions with OIDC. PRs run tests and a read-only plan; merges wait for approval of the `production` environment, then apply and publish
+- **Observability:** CloudWatch SLO alarms (availability on 5xx only, p95 latency, Lambda, CloudFront) with low-traffic gates, SNS email alerts, and an SLO dashboard
+- **Tests:** 87+ Lambda unit tests, plus a scripted end-to-end check of people and machine access
+
+## Roadmap
+
+Not built yet. This list moves up into "What's built" as each item ships:
+
+- DynamoDB audit trail (who uploaded or downloaded what, and when)
+- Automatic rotation of the CI client secret
+- PagerDuty paging from the alerts topic
 
 ## CDN (`modules/cdn`)
 
@@ -40,7 +57,7 @@ CloudWatch alarms, an SNS alerts topic and an SLO dashboard (`terraform output s
 Supporting alarms: Lambda `Errors` (per function, 2 of 3) and `Throttles` (any), and CloudFront `5xxErrorRate` > 5%.
 
 - **Why 4xx don't count:** RBAC denials are 403s by design and bad input is 400. Those requests are the API working as intended, so only 5xx spend the error budget.
-- **Low traffic:** windows with fewer than 10 requests count as 0% errors, and every alarm treats missing data as OK. A single failure on an idle lab can't page.
+- **Low traffic:** availability, p95 latency and CloudFront 5xx all treat windows with fewer than 10 requests as healthy, and every alarm treats missing data as OK. A single failure on an idle lab can't page.
 - **Where alerts go:** SNS topic `artifact-portal-dev-alerts`, for both ALARM and OK transitions. Email is subscribed only when `alert_email` is set: in an untracked `envs/dev/terraform.tfvars` locally, and as the `ALERT_EMAIL` repository **secret** in CI (masked in public logs; the variable is `sensitive`). Confirm the subscription from AWS's email.
 - **No IAM changes:** the CI apply role's `PowerUserAccess` (`bootstrap/github_oidc.tf`) already covers CloudWatch and SNS, and this module creates no IAM roles.
 - **Test the paging path** without breaking anything. The alarm flips back on its next evaluation, which also sends the OK notification:
