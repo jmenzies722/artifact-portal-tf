@@ -12,14 +12,13 @@ Personal lab project, written from scratch. Live: https://d77vjbj8h7gd5.cloudfro
 - **Frontend:** Next.js static export on a private S3 bucket behind CloudFront (OAC). `/api/*` is same-origin, with security headers
 - **CI/CD:** GitHub Actions with OIDC. PRs run tests and a read-only plan; merges wait for approval of the `production` environment, then apply and publish
 - **Observability:** CloudWatch SLO alarms (availability on 5xx only, p95 latency, Lambda, CloudFront) with low-traffic gates, SNS email alerts, and an SLO dashboard
+- **Secret rotation:** the CI client's Cognito secret rotates every 30 days with zero downtime (Secrets Manager rotation Lambda, two active Cognito secrets; see `modules/auth/ROTATION.md`)
+- **Paging:** the alerts topic also feeds PagerDuty's CloudWatch integration (service `artifact-portal-dev`). ALARM opens an incident and OK resolves it. The integration URL lives in Secrets Manager
 - **Tests:** 87+ Lambda unit tests, plus a scripted end-to-end check of people and machine access
 
 ## Roadmap
 
-Not built yet. This list moves up into "What's built" as each item ships:
-
-- Automatic rotation of the CI client secret
-- PagerDuty paging from the alerts topic
+Everything on the original roadmap has shipped.
 
 ## CDN (`modules/cdn`)
 
